@@ -10,7 +10,7 @@ public class Main {
             System.out.println(user);
         }
 
-        int myIndex = 9;
+        int myIndex = 8;
         int n = users.length;
 
         double[] similarity = findSimilarity(n, users, myIndex);
@@ -90,14 +90,16 @@ public class Main {
 
     private static double getMissedItem(int n, User[] users, int index, double[] similarity) {
         double currentItem = 0;
+        double similaritySum = 0;
         for (int i = 0; i < n; i++) {
             double item = users[i].getItem(index);
             if (item == 0 || similarity[i] < 0.5) {
                 continue;
             }
             currentItem += similarity[i] * item;
+            similaritySum += similarity[i];
         }
-        currentItem /= Math.abs(sum(similarity));
+        currentItem /= Math.abs(similaritySum);
         return currentItem;
     }
 
