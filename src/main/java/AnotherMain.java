@@ -12,7 +12,7 @@ public class AnotherMain {
             System.out.println(user);
         }
 
-        int myIndex = 5;
+        int myIndex = 8;
         int n = users.length;
 
         double[] similarity = findSimilarity(n, users, myIndex);
