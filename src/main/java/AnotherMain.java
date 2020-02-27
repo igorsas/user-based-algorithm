@@ -3,7 +3,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Main {
+public class AnotherMain {
     public static void main(String[] args) {
         int amountUsers = 10;
         int amountItems = 10;
@@ -12,7 +12,7 @@ public class Main {
             System.out.println(user);
         }
 
-        int myIndex = 8;
+        int myIndex = 5;
         int n = users.length;
 
         double[] similarity = findSimilarity(n, users, myIndex);
@@ -24,7 +24,7 @@ public class Main {
             if(item.getValue() == 0){
                 System.out.println("Users with similar taste don't watch movie with " + item.getKey() + " index too");
             }else {
-                System.out.print(item.getKey() + ": " + item + ", ");
+                System.out.print(item+", ");
             }
         }
     }
@@ -63,27 +63,42 @@ public class Main {
     }
 
     private static double pearson(User[] users, int myIndex, int i) {
+        int generalN = users[myIndex].getItems().length;
         int localN = findN(users[myIndex], users[i]);
-        double vector1 = sum(users[myIndex].getItems())/localN;
-        double vector2 = sum(users[i].getItems())/localN;
+        List<Integer> skippedIndexes = findSkippedIndexes(users, myIndex, i);
+        double vector1 = sum(users[myIndex].getItems(), skippedIndexes)/localN;
+        double vector2 = sum(users[i].getItems(), skippedIndexes)/localN;
 
-        double diff = getDiff(users[myIndex].getItems(), users[i].getItems(), vector1, vector2, localN);
-        double sqrDiff1 = getSqrPow(users[myIndex].getItems(), vector1, localN);
-        double sqrDiff2 = getSqrPow(users[i].getItems(), vector2, localN);
+        double diff = getDiff(users[myIndex].getItems(), users[i].getItems(), vector1, vector2, generalN, skippedIndexes);
+        double sqrDiff1 = getSqrPow(users[myIndex].getItems(), vector1, generalN, skippedIndexes);
+        double sqrDiff2 = getSqrPow(users[i].getItems(), vector2, generalN, skippedIndexes);
         return diff/(sqrDiff1*sqrDiff2);
     }
 
-    private static double getSqrPow(double[] items, double vector1, int n) {
+    private static List<Integer> findSkippedIndexes(User[] users, int myIndex, int i) {
+        List<Integer> skippedIndexes = new ArrayList<>();
+        for (int j = 0; j < users[myIndex].getItems().length; j++) {
+            if(users[i].getItem(j) == 0 || users[myIndex].getItem(j) == 0)
+                skippedIndexes.add(j);
+        }
+        return skippedIndexes;
+    }
+
+    private static double getSqrPow(double[] items, double vector1, int n, List<Integer> skippedIndexes) {
         double result = 0;
         for (int i = 0; i < n; i++) {
+            if (skippedIndexes.contains(i))
+                continue;
             result += Math.pow(items[i]-vector1, 2);
         }
         return Math.sqrt(result);
     }
 
-    private static double getDiff(double[] items1, double[] items2, double vector1,double vector2, int n){
+    private static double getDiff(double[] items1, double[] items2, double vector1,double vector2, int n, List<Integer> skippedIndexes){
         double result = 0;
         for (int i = 0; i < n; i++) {
+            if (skippedIndexes.contains(i))
+                continue;
             result += (items1[i]-vector1)*(items2[i]-vector2);
         }
         return result;
@@ -105,12 +120,14 @@ public class Main {
         return currentItem;
     }
 
-    private static double sum(double[] similarity) {
+    private static double sum(double[] items, List<Integer> skippedIndexes) {
         double result = 0;
-        for (double e : similarity) {
+        for (int i = 0; i < items.length; i++) {
+            double e = items[i];
+            if (skippedIndexes.contains(i))
+                continue;
             result += e;
         }
-
         return result;
     }
 
